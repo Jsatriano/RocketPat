@@ -11,8 +11,6 @@ class Play extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(20, 20, "Rocket Patrol Play Screen");
-        
         this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0);
         
         //green section of UI
@@ -58,17 +56,17 @@ class Play extends Phaser.Scene {
 
         let scoreConfig = {
             fontFamily: 'Courier',
-            fonstSize: '28px',
+            fontSize: '28px',
             backgroundColor: '#F3B141',
             color: '#843605',
-            alight: 'right',
+            align: 'right',
             padding: {
-                top: 5, bottom: 5
+              top: 5,
+              bottom: 5,
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, 
-            this. p1Score, scoreConfig);
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, this.p1Score, scoreConfig);
         
         //game over flag
         this.gameOver = false;
