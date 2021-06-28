@@ -4,10 +4,11 @@ class Play extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('rocket', './assets/rocket.png');
-        this.load.image('spaceship', './assets/spaceship.png');
-        this.load.image('starfield', './assets/starfield.png');
-        this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
+        this.load.image('rocket', './assets/my_rocket.png');
+        this.load.image('spaceship', './assets/my_spaceship.png');
+        //this.load.spritesheet('spaceship', './assets/my_spaceship_anim.png', {frameWidth: 63, frameHeight: 32, startFrame: 0, endFrame: 3});
+        this.load.image('starfield', './assets/my_background.png');
+        this.load.spritesheet('explosion', './assets/my_explosion.png', {frameWidth: 40, frameHeight: 32, startFrame: 0, endFrame: 3});
     }
 
     create() {
@@ -29,9 +30,14 @@ class Play extends Phaser.Scene {
         
         //create rocket
         this.p1Rocket = new Rocket(this, game.config.width / 2, 
-            game.config.height - (borderUISize + borderPadding), 
-            'rocket').setOrigin(0.5, 0);
-        //create spaceship
+            game.config.height - (borderUISize + borderPadding) - 25, 'rocket').setOrigin(0.5, 0);
+        //create spaceships
+        this.anims.create({
+            key: 'ship',
+            frames: this.anims.generateFrameNumbers('spaceship', {start: 0, end: 3, first: 0}),
+            framerate: 5
+        });
+
         this.ship01 = new Spaceship(this, game.config.width + borderUISize * 6,
             borderUISize * 4, 'spaceship', 0, 30).setOrigin(0, 0);
         this.ship02 = new Spaceship(this, game.config.width + borderUISize * 3,
@@ -48,8 +54,8 @@ class Play extends Phaser.Scene {
         //create explosion animation
         this.anims.create({
             key: 'explode',
-            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 9, first: 0}),
-            frameRate: 30
+            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 3, first: 0}),
+            frameRate: 10
         });
 
         this.p1Score = 0;
@@ -67,6 +73,23 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding * 2, this.p1Score, scoreConfig);
+        
+        let fireConfig = {
+            fontFamily: 'Courier',
+            fontSize: '36px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'middle',
+            padding: {
+              top: 5,
+              bottom: 5,
+            },
+            //fixedWidth: 90
+        }
+        
+        
+        this.fireText = this.add.text(borderUISize + borderPadding * 24, borderUISize + borderPadding * 2, 'FIRE', fireConfig);
+        this.fireText.alpha = 0;
         
         //game over flag
         this.gameOver = false;
@@ -98,15 +121,44 @@ class Play extends Phaser.Scene {
         // check collisions
         if(this.checkCollision(this.p1Rocket, this.ship03)) {
             this.p1Rocket.reset();
-            this.shipExplode(this.ship03);
+            this.shipExplode(this.ship03, Math.round(Math.random() * 5));
         }
         if (this.checkCollision(this.p1Rocket, this.ship02)) {
             this.p1Rocket.reset();
-            this.shipExplode(this.ship02);
+            this.shipExplode(this.ship02, Math.round(Math.random() * 5));
         }
         if (this.checkCollision(this.p1Rocket, this.ship01)) {
             this.p1Rocket.reset();
-            this.shipExplode(this.ship01);
+            this.shipExplode(this.ship01, Math.round(Math.random() * 5));
+        }
+
+        if(this.p1Rocket.isFiring) {
+            this.fireText.alpha = 100;
+        } else {
+            this.fireText.alpha = 0;
+        }
+    }
+
+    explosionRandom(number) {
+        if(number == 1) {
+            //play exp 1
+            this.sound.play('sfx_explosion');
+        }
+        else if(number == 2) {
+            //play exp 2
+            this.sound.play('sfx_explosion2');
+        }
+        else if(number == 3) {
+            //play exp 3
+            this.sound.play('sfx_explosion3');
+        }
+        else if(number == 4) {
+            //play exp 4
+            this.sound.play('sfx_explosion4');
+        }
+        else {
+            //play exp 5
+            this.sound.play('sfx_explosion5');
         }
     }
 
@@ -120,11 +172,12 @@ class Play extends Phaser.Scene {
         return false;
     }
 
-    shipExplode(ship) {
+    shipExplode(ship, number) {
         ship.alpha = 0 //hide ship
         let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
         boom.anims.play('explode');
-        this.sound.play('sfx_explosion');
+        this.explosionRandom(number);
+        
         boom.on('animationcomplete', () => {
             ship.reset();
             ship.alpha = 1;
